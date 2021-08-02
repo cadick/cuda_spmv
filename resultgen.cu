@@ -135,6 +135,7 @@ int main() {
             cudaMemcpy(d_m_W, h_m_W, M * MATRIXW_BYTES, cudaMemcpyHostToDevice);
             cudaMemcpy(d_v_y, h_v_y, V * VECTORY_BYTES, cudaMemcpyHostToDevice);
 
+            cudaDeviceSynchronize();
             auto start_mv = std::chrono::high_resolution_clock::now();
 
             // launch the kernel
@@ -169,6 +170,7 @@ int main() {
             cufftHandle plan;
             cufftPlan1d(&plan, dimU, CUFFT_Z2Z, M * V);
 
+            cudaDeviceSynchronize();
             auto start_spmv = std::chrono::high_resolution_clock::now();
 
             // launch the kernel
