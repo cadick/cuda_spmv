@@ -16,7 +16,7 @@
 #include "cuComplex.h"
 
 #define M 500        // number of Matrices we want to multiply
-#define V 10         // number of Vectors we want to multiply
+#define V 100         // number of Vectors we want to multiply
 #define dimU 16      // number of senders = rows of Matrix h_m_W
 #define dimB 128     // number of receivers = columns of Matrix h_m_W
 #define K 12         // number of zero values per row
@@ -95,21 +95,21 @@ int main() {
     int *d_ia, *d_ja;
 
     // filling matrices with rendom amount of zeros per row
-    //fillMatrix(h_m_W, MATRIX_SIZE * M);
-    //printMatrices(h_m_W, MATRIX_SIZE, dimB, M);
+    fillMatrix(h_m_W, MATRIX_SIZE * M);
+    // printMatrices(h_m_W, MATRIX_SIZE, dimB, M);
 
-    // fill matrices with k zeros per row
-    fillStructuredMatrix(h_m_W, dimU*M, dimB, K);
+    //fill matrices with k zeros per row
+    //fillStructuredMatrix(h_m_W, dimU*M, dimB, K);
     //printMatrices(h_m_W, MATRIX_SIZE, dimB, M);
 
     fillVector(h_v_y, dimB * V);
     //printVectors(h_v_y, dimB, V);
 
     // make matrices CSR
-    auto start_csr = std::chrono::high_resolution_clock::now();
+    //auto start_csr = std::chrono::high_resolution_clock::now();
     makeCSR(h_m_W, dimU, dimB, h_a, h_ia, h_ja, &total_nnz, M);
-    auto finish_csr = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed_csr = finish_csr - start_csr;
+    //auto finish_csr = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration<double> elapsed_csr = finish_csr - start_csr;
     //printCSR(h_a, h_ia, h_ja, dimU, &total_nnz, M);
 
     // allocate GPU memory pointers
@@ -131,14 +131,14 @@ int main() {
     // transfer the array to the GPU
     cudaMemcpy(d_m_W, h_m_W, M*MATRIXW_BYTES, cudaMemcpyHostToDevice);
     cudaMemcpy(d_v_y, h_v_y, V*VECTORY_BYTES, cudaMemcpyHostToDevice);
+    cudaDeviceSynchronize();
 
     auto start_mv = std::chrono::high_resolution_clock::now();
 
     // launch the kernel
     matrixVectorMultiplication <<<dimGrid, dimBlock>>>(d_m_W, d_v_y, d_v_r);
-
-    auto finish_mv = std::chrono::high_resolution_clock::now();
     cudaDeviceSynchronize();
+    auto finish_mv = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_mv = finish_mv - start_mv;
 
     // copy back the result array to the CPU
@@ -165,6 +165,7 @@ int main() {
     // create plan for FFT
     cufftHandle plan;
     cufftPlan1d(&plan, dimU, CUFFT_Z2Z, M*V);
+    cudaDeviceSynchronize();
 
     auto start_spmv = std::chrono::high_resolution_clock::now();
 
@@ -245,8 +246,6 @@ int main() {
     std::cout << "\nComputation time:\nMV:       " << elapsed_mv.count() << " s\nSPMV:     " << elapsed_spmv.count()<< " s\nSPMV+FFT: " << elapsed_spmvfft.count() << " s\n";
     //std::cout <<"c++:      " << elapsed_cpp.count() << " s\n";
     std::cout << "rows: " << dimU << ", cols: " << dimB << ", matrices: " << M << ", vectors: " << V << ", zeros: " << K << "\n";
-    std::cout << "csr:      " << elapsed_csr.count() << " s\n";
-    std::cout << "sizeof(cuDoubleComplex) " << sizeof(cuDoubleComplex) << " s\n";
-    std::cout << "sizeof(int) " << sizeof(int) << " s\n";
+    //std::cout << "csr:      " << elapsed_csr.count() << " s\n";
     return 0;
 }
