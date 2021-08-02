@@ -65,9 +65,8 @@ int getRand() {
 
     return dist100(rng);
 }
-template <class RandomAccessIterator, class URNG>
 
-// fill Matrices with complex values (ranged 0 to 100), row wise
+// fill 1 Matrix with values (ranged 0 to 100), row wise
 void fillMatrix(cuDoubleComplex* m, int size) {
     for (int i = 0; i < size; i++) {
         // 80% chance of zero value
