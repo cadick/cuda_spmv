@@ -11,10 +11,13 @@ comparison of spmv implementations in cuda
 ### CentOS compiling
 
 export LD_LIBRARY_PATH="/usr/local/cuda-11.0/targets/x86_64-linux/lib/"
+
 nvcc -std=c++11 comparison.cu -o comparison -I/usr/local/cuda/targets/x86_64-linux/include/ -L/usr/local/cuda/targets/x86_64-linux/lib/ -lcufft
+
 ./comparison
 
 ### Windows compiling:
 
 nvcc -std=c++11 comparison.cu -o comparison -I/usr/local/cuda/targets/x86_64-linux/include/ -L/usr/local/cuda/targets/x86_64-linux/lib/ -lcufft
+
 comparison.exe
